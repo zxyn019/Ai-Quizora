@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-brain text-primary me-3"></i>
+                Welcome to Quiz Master
+            </h1>
+            <p class="lead mb-4">
+                Challenge yourself with AI-generated quizzes on various topics. 
+                Test your knowledge, compete with others, and climb the leaderboard!
+            </p>
+        </div>
+    </div>
+
+    <!-- Create Quiz Form -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Quiz
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('create_quiz') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="topic" class="form-label">Quiz Topic</label>
+                                <input type="text" class="form-control" id="topic" name="topic" 
+                                       placeholder="e.g., Renaissance Art, Python Programming" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="question_type" class="form-label">Question Type</label>
+                                <select class="form-select" id="question_type" name="question_type" required>
+                                    <option value="">Select Question Type</option>
+                                    {% for qtype in question_types %}
+                                    <option value="{{ qtype.value }}">{{ qtype.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="difficulty" class="form-label">Difficulty Level</label>
+                                <select class="form-select" id="difficulty" name="difficulty" required>
+                                    <option value="">Select Difficulty</option>
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="num_questions" class="form-label">Number of Questions</label>
+                                <select class="form-select" id="num_questions" name="num_questions">
+                                    <option value="5">5 Questions</option>
+                                    <option value="10" selected>10 Questions</option>
+                                    <option value="15">15 Questions</option>
+                                    <option value="20">20 Questions</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic me-2"></i>Generate Quiz with AI
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Types Grid -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-th-large me-2"></i>Question Types
+            </h2>
+        </div>
+        {% for qtype in question_types %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 category-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-{{ qtype.icon }} fa-2x text-primary mb-3"></i>
+                    <h5 class="card-title">{{ qtype.name }}</h5>
+                    <p class="card-text small">{{ qtype.description }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <!-- Recent Quizzes -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Quizzes
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_quizzes %}
+                        <div class="list-group list-group-flush">
+                            {% for quiz in recent_quizzes %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ quiz.title }}</h6>
+                                    <small class="text-muted">{{ quiz.category }} • {{ quiz.difficulty.title() }}</small>
+                                </div>
+                                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-outline-primary">
+                                    Take Quiz
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No quizzes available yet. Create the first one!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Top Performers
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if top_users %}
+                        <div class="list-group list-group-flush">
+                            {% for user in top_users %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ user.username }}</h6>
+                                    <small class="text-muted">{{ user.get_quiz_count() }} quizzes taken</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ user.get_average_score() }}% avg
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No scores yet. Be the first to take a quiz!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

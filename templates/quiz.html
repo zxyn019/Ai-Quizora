@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Quiz Master{% endblock %}
+
+{% block head %}
+<style>
+    .quiz-progress {
+        height: 8px;
+        background-color: var(--bs-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .quiz-progress-bar {
+        height: 100%;
+        background-color: var(--bs-primary);
+        transition: width 0.3s ease;
+    }
+    
+    .question-card {
+        min-height: 300px;
+        transition: transform 0.3s ease;
+    }
+    
+    .question-card.animate-in {
+        transform: translateX(0);
+    }
+    
+    .question-card.animate-out {
+        transform: translateX(-100%);
+    }
+    
+    .timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--bs-warning);
+    }
+    
+    .timer.urgent {
+        color: var(--bs-danger);
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Quiz Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-1">{{ quiz.title }}</h2>
+                            <div class="d-flex gap-3">
+                                <span class="badge bg-secondary">{{ quiz.category }}</span>
+                                <span class="badge bg-info">{{ quiz.difficulty.title() }}</span>
+                                <span class="badge bg-success">{{ quiz.total_questions }} Questions</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="timer" id="timer">05:00</div>
+                            <small class="text-muted">Time Remaining</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="quiz-progress mt-3">
+                        <div class="quiz-progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">Question <span id="currentQuestion">1</span> of {{ quiz.total_questions }}</small>
+                        <small class="text-muted">Progress: <span id="progressPercent">0</span>%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Info Form (shown initially) -->
+    <div class="row mb-4" id="userInfoSection">
+        <div class="col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Before We Start...</h4>
+                </div>
+                <div class="card-body">
+                    <form id="userInfoForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email (optional)</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="your.email@example.com">
+                        </div>
+                        <div class="text-center">
+                            <button type="button" class="btn btn-primary btn-lg" id="startQuizBtn">
+                                <i class="fas fa-play me-2"></i>Start Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Questions (hidden initially) -->
+    <div class="row" id="quizSection" style="display: none;">
+        <div class="col-lg-8 mx-auto">
+            <div class="card question-card" id="questionCard">
+                <div class="card-body p-4">
+                    <!-- Question Content -->
+                    <div id="questionContent">
+                        <!-- Dynamic content loaded here -->
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" disabled>
+                            <i class="fas fa-arrow-left me-2"></i>Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">
+                            Next<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="button" class="btn btn-success" id="submitBtn" style="display: none;">
+                            <i class="fas fa-check me-2"></i>Submit Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+         id="loadingOverlay" style="background: rgba(0,0,0,0.8); z-index: 1050; display: none !important;">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h4 class="text-white">Processing your quiz...</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Data -->
+<script>
+    const QUIZ_DATA = {{ quiz | tojsonfilter | safe }};
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}

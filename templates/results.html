@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Results Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <div class="card">
+                <div class="card-body py-5">
+                    {% if percentage >= 80 %}
+                        <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                        <h1 class="display-4 text-success">Excellent!</h1>
+                    {% elif percentage >= 60 %}
+                        <i class="fas fa-thumbs-up fa-4x text-success mb-3"></i>
+                        <h1 class="display-4 text-info">Good Job!</h1>
+                    {% else %}
+                        <i class="fas fa-graduation-cap fa-4x text-primary mb-3"></i>
+                        <h1 class="display-4 text-warning">Keep Learning!</h1>
+                    {% endif %}
+                    
+                    <h2 class="mb-4">{{ quiz.title }}</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ result.score }}</h3>
+                                    <small>Points Scored</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ percentage }}%</h3>
+                                    <small>Percentage</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ result.total_questions }}</h3>
+                                    <small>Total Questions</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ (result.time_taken // 60) }}:{{ '%02d' | format(result.time_taken % 60) }}</h3>
+                                    <small>Time Taken</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Results -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>Detailed Results
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% for question_result in detailed_results %}
+                    <div class="card mb-3 {% if question_result.is_correct %}border-success{% else %}border-danger{% endif %}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Question {{ loop.index }}</h5>
+                            <div>
+                                {% if question_result.is_correct %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Correct
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times me-1"></i>Incorrect
+                                    </span>
+                                {% endif %}
+                                <span class="badge bg-secondary ms-2">
+                                    {{ question_result.points_earned }}/{{ question_result.max_points }} pts
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="question-text mb-3">{{ question_result.question }}</h6>
+                            
+                            {% if question_result.type == 'mcq' and question_result.options %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted">Options:</h6>
+                                        <ul class="list-unstyled">
+                                            {% for option in question_result.options %}
+                                                <li class="mb-1 {% if option == question_result.correct_answer %}text-success fw-bold{% elif option == question_result.user_answer %}text-danger{% endif %}">
+                                                    {% if option == question_result.user_answer %}
+                                                        <i class="fas fa-arrow-right me-2"></i>
+                                                    {% endif %}
+                                                    {{ option }}
+                                                    {% if option == question_result.correct_answer %}
+                                                        <i class="fas fa-check text-success ms-2"></i>
+                                                    {% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="answer-summary">
+                                            <h6 class="text-muted">Your Answer:</h6>
+                                            <p class="{% if question_result.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                                {{ question_result.user_answer or 'No answer provided' }}
+                                            </p>
+                                            
+                                            {% if not question_result.is_correct %}
+                                                <h6 class="text-muted">Correct Answer:</h6>
+                                                <p class="text-success">{{ question_result.correct_answer }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted">Your Answer:</h6>
+                                        <p class="{% if question_result.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                            {{ question_result.user_answer or 'No answer provided' }}
+                                        </p>
+                                    </div>
+                                    {% if not question_result.is_correct %}
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted">Correct Answer:</h6>
+                                        <p class="text-success">{{ question_result.correct_answer }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-home me-2"></i>Take Another Quiz
+            </a>
+            <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-trophy me-2"></i>View Leaderboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

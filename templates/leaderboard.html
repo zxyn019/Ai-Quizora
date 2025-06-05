@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-trophy text-warning me-3"></i>
+                Leaderboard
+            </h1>
+            <p class="lead">See how you rank among quiz masters!</p>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Top Performers (By Average Score)
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if top_users %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Player</th>
+                                        <th>Quizzes Taken</th>
+                                        <th>Total Score</th>
+                                        <th>Average Score</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in top_users %}
+                                    <tr {% if loop.index <= 3 %}class="table-warning"{% endif %}>
+                                        <td>
+                                            {% if loop.index == 1 %}
+                                                <i class="fas fa-crown text-warning"></i> #1
+                                            {% elif loop.index == 2 %}
+                                                <i class="fas fa-medal text-secondary"></i> #2
+                                            {% elif loop.index == 3 %}
+                                                <i class="fas fa-award text-warning"></i> #3
+                                            {% else %}
+                                                #{{ loop.index }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ user.username }}</strong>
+                                            {% if loop.index <= 3 %}
+                                                <span class="badge bg-primary ms-2">Top Player</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.quiz_count }}</td>
+                                        <td>{{ user.total_score }}</td>
+                                        <td>
+                                            <span class="badge bg-success">{{ "%.1f" | format(user.avg_score) }}%</span>
+                                        </td>
+                                        <td>
+                                            {% if user.avg_score >= 90 %}
+                                                <span class="text-warning">★★★★★ Master</span>
+                                            {% elif user.avg_score >= 80 %}
+                                                <span class="text-info">★★★★☆ Expert</span>
+                                            {% elif user.avg_score >= 70 %}
+                                                <span class="text-success">★★★☆☆ Advanced</span>
+                                            {% elif user.avg_score >= 60 %}
+                                                <span class="text-primary">★★☆☆☆ Intermediate</span>
+                                            {% else %}
+                                                <span class="text-secondary">★☆☆☆☆ Beginner</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h4>No scores yet!</h4>
+                            <p class="text-muted">Be the first to take a quiz and claim the top spot!</p>
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                <i class="fas fa-play me-2"></i>Take a Quiz
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent High Scores -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent High Scores
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_scores %}
+                        {% for result, user, quiz in recent_scores %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ user.username }}</h6>
+                                <small class="text-muted">{{ quiz.title }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success">{{ result.score }} pts</span>
+                                <br>
+                                <small class="text-muted">{{ result.completed_at.strftime('%m/%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent scores available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Leaders -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Category Leaders
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if category_leaders %}
+                        {% for category, username, best_score in category_leaders %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ category }}</h6>
+                                <small class="text-muted">{{ username }}</small>
+                            </div>
+                            <span class="badge bg-primary">{{ best_score }} pts</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No category leaders yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="card bg-primary">
+                <div class="card-body py-4">
+                    <h3 class="text-white mb-3">Ready to Climb the Leaderboard?</h3>
+                    <p class="text-white mb-4">Take more quizzes to improve your ranking and become a Quiz Master!</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-play me-2"></i>Start Quiz Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
